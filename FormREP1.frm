@@ -11,6 +11,14 @@ Begin VB.Form Form1
    ScaleHeight     =   6732
    ScaleWidth      =   10440
    StartUpPosition =   3  'Windows Default
+   Begin VB.CommandButton Command2 
+      Caption         =   "Command2"
+      Height          =   360
+      Left            =   3360
+      TabIndex        =   2
+      Top             =   5160
+      Width           =   990
+   End
    Begin MSAdodcLib.Adodc Adodc1 
       Height          =   312
       Left            =   1680
@@ -106,82 +114,60 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Private Sub Command1_Click()
-
-
 Dim Connection As New ADODB.Connection
-
-
 Dim RS As New ADODB.Recordset
-
-
-'Create a connection to the Xtreme database.
-'Connection.ConnectionString = _
-
-
-'"Provider=Microsoft.Jet.OLEDB.4.0;" _
-
-
-'+ "Persist Security Info=False;Data Source=" _
-
-
-'+ "C:\Program Files\Crystal Decisions\Crystal Reports 9" _
-
-
-'+ "\Samples\En\Databases\xtreme.mdb;Mode=Read"
-
-
 Connection.Open "DSN=magazi;uid=sa;pwd=12345678"
-
-
 'Obtain a Recordset object from the Customers table of the Xtreme database.
 RS.Open "select * from PEL WHERE ID=11680 ", _
 Connection, adOpenDynamic, adLockPessimistic, adCmdText
+Dim CRXApplication As New CRAXDRT.Application
+Dim CRXReport As CRAXDRT.Report
+'Obtain a Report object by opening the report file you created earlier. This example uses the file Customer.RPT.
+Set CRXReport = CRXApplication.OpenReport("c:\MERCVB\reports\CUSTOMERS.rpt", 1)
+Dim CRXDatabase As CRAXDRT.Database
+Set CRXDatabase = CRXReport.Database
+'Once you have a Database object for the Report object, you can pass the Active data source to the Report object using the SetDataSource method. This method requires three parameters. The first is the data source itself. The second parameter is a value indicating that the data source you are passing to the report is an ActiveX data source. This value must be 3. The third parameter is the table you are passing the data source to. Since you should only have one table defining the structure of the recordset, this should always be 1. For example:
+CRXDatabase.SetDataSource RS, 3, 1
+CRXReport.SQLQueryString = "select * from PEL WHERE ID=11680   "
+CRViewer91.ReportSource = CRXReport
+CRViewer91.ViewReport
+'ok typonei
+CRXReport.PrintOut
 
+End Sub
+'
+ 'SELECT "HME", "APA", "ATIM", "PEL"."EPO", "PEL"."DIE", "PEL"."EPA", "PEL"."TYP", "KOD", "XREOSI", "PISTOSI", "ID", "AIT"
+ 'FROM   "MERCURY"."dbo"."EGG" "EGG" INNER JOIN "MERCURY"."dbo"."PEL" "PEL" ON ("EIDOS"="PEL"."EIDOS") AND ("KOD"="PEL"."KOD")
+Private Sub Command2_Click()
+'=============================================================
+Dim Connection As New ADODB.Connection
+Dim RS As New ADODB.Recordset
+Connection.Open "DSN=mercsql"  ' magazi;uid=sa;pwd=12345678"
+'Obtain a Recordset object from the Customers table of the Xtreme database.
+Dim sql As String
 
+sql = "select * from TIMOLOGIA WHERE ATIM='T000093'  "
+'sql = "SELECT HME, APA, ATIM, PEL.EPO, PEL.DIE, PEL.EPA, PEL.TYP, EGG.KOD, XREOSI, PISTOSI, EGG.ID, AIT  "
+'sql = sql + "FROM   EGG INNER JOIN PEL ON (EGG.EIDOS=PEL.EIDOS) AND (EGG.KOD=PEL.KOD)" ' WHERE EGG.ID=93630 "
 
-
-
-
+RS.Open sql, Connection, adOpenDynamic, adLockPessimistic, adCmdText
 
 
 Dim CRXApplication As New CRAXDRT.Application
-
-
 Dim CRXReport As CRAXDRT.Report
-
-
 'Obtain a Report object by opening the report file you created earlier. This example uses the file Customer.RPT.
-Set CRXReport = CRXApplication.OpenReport("c:\MERCVB\reports\CUSTOMERS.rpt", 1)
-
-
-
-
-
-
+Set CRXReport = CRXApplication.OpenReport("c:\MERCVB\reports\TIM2-odbc.rpt", 1)
 Dim CRXDatabase As CRAXDRT.Database
 Set CRXDatabase = CRXReport.Database
-
 'Once you have a Database object for the Report object, you can pass the Active data source to the Report object using the SetDataSource method. This method requires three parameters. The first is the data source itself. The second parameter is a value indicating that the data source you are passing to the report is an ActiveX data source. This value must be 3. The third parameter is the table you are passing the data source to. Since you should only have one table defining the structure of the recordset, this should always be 1. For example:
-
 CRXDatabase.SetDataSource RS, 3, 1
-
-
-
-CRXReport.SQLQueryString = "select * from PEL WHERE ID=11680   "
-
-
+CRXReport.SQLQueryString = sql
+'CRXReport.RecordSelectionFormula = " {TIMOLOGIA.ATIM}='T000181' "
 
 
 CRViewer91.ReportSource = CRXReport
 CRViewer91.ViewReport
-
 'ok typonei
-
 CRXReport.PrintOut
-
-
-
-
-
 
 End Sub
